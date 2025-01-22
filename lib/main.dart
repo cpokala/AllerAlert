@@ -3,6 +3,7 @@ import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/log_symptoms_screen.dart';
+import 'screens/medications_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignupScreen(),
         '/home': (context) => const HomeScreen(),
         '/log-symptoms': (context) => const LogSymptomsScreen(),
+        '/medications': (context) => const MedicationsScreen(),
       },
       initialRoute: '/',
     );

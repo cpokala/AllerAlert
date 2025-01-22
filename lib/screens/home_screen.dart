@@ -16,123 +16,56 @@ class HomeScreen extends StatelessWidget {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // Greeting Card
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Hi,',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'How have you been?',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey,
-                          ),
-                          child: const Icon(
-                            Icons.person_outline,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                      ],
-                    ),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // Greeting Card
+                _buildGreetingCard(),
+
+                const SizedBox(height: 20),
+
+                // Action Buttons Row
+                _buildActionButtonsRow(context),
+
+                const SizedBox(height: 24),
+
+                // City Image
+                _buildImageContainer('assets/images/city_skyline.png'),
+
+                const SizedBox(height: 24),
+
+                // Air Quality Button
+                Center(child: _buildButton(context, 'Air Quality', width: 116)),
+
+                const SizedBox(height: 24),
+
+                // Community Image
+                _buildImageContainer('assets/images/community.png'),
+
+                const SizedBox(height: 24),
+
+                // Join Community Button
+                Center(child: _buildButton(context, 'Join our Community', width: 185)),
+
+                const SizedBox(height: 24),
+
+                // Asthma History Text
+                const Text(
+                  'Look at your Asthma History',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
                   ),
+                ),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                  // Action Buttons Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildActionButton(context, 'Log Symptom'),
-                      _buildActionButton(context, 'Insights'),
-                      _buildActionButton(context, 'Medication'),
-                    ],
-                  ),
+                // Progress Button
+                Center(child: _buildButton(context, 'Check your Progress', width: 185)),
 
-                  const SizedBox(height: 24),
-
-                  // City Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      'assets/images/city_skyline.png',
-                      width: double.infinity,
-                      height: 190,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Air Quality Button
-                  _buildActionButton(context, 'Air Quality', width: 116),
-
-                  const SizedBox(height: 24),
-
-                  // Community Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      'assets/images/community.png',
-                      width: double.infinity,
-                      height: 190,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Join Community Button
-                  _buildActionButton(context, 'Join our Community', width: 185),
-
-                  const SizedBox(height: 24),
-
-                  // Asthma History Text
-                  const Text(
-                    'Look at your Asthma History',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Progress Button
-                  _buildActionButton(context, 'Check your Progress', width: 185),
-                ],
-              ),
+                const SizedBox(height: 24),
+              ],
             ),
           ),
         ),
@@ -140,7 +73,78 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String text, {double? width}) {
+  Widget _buildGreetingCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hi,',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'How have you been?',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey,
+            ),
+            child: const Icon(
+              Icons.person_outline,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtonsRow(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildButton(context, 'Log Symptom'),
+        _buildButton(context, 'Insights'),
+        _buildButton(context, 'Medication'),
+      ],
+    );
+  }
+
+  Widget _buildImageContainer(String imagePath) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Image.asset(
+        imagePath,
+        width: double.infinity,
+        height: 190,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Widget _buildButton(BuildContext context, String text, {double? width}) {
     return Container(
       width: width ?? 110,
       height: 41,
@@ -157,6 +161,8 @@ class HomeScreen extends StatelessWidget {
         onPressed: () {
           if (text == 'Log Symptom') {
             Navigator.pushNamed(context, '/log-symptoms');
+          } else if (text == 'Medication') {
+            Navigator.pushNamed(context, '/medications');
           }
         },
         style: ElevatedButton.styleFrom(
