@@ -5,8 +5,12 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Container(
+        width: screenSize.width,
+        height: screenSize.height,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment(0.00, -1.00),
@@ -16,40 +20,29 @@ class HomeScreen extends StatelessWidget {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                // Greeting Card
                 _buildGreetingCard(),
-
                 const SizedBox(height: 20),
-
-                // Action Buttons Row
-                _buildActionButtonsRow(context),
-
+                _buildActionButtons(context),
                 const SizedBox(height: 24),
-
-                // City Image
-                _buildImageContainer('assets/images/city_skyline.png'),
-
+                _buildImageSection('assets/images/city_skyline.png'),
                 const SizedBox(height: 24),
-
-                // Air Quality Button
-                Center(child: _buildButton(context, 'Air Quality', width: 116)),
-
+                _buildActionButton(
+                  context: context,
+                  text: 'Air Quality',
+                  width: 116,
+                ),
                 const SizedBox(height: 24),
-
-                // Community Image
-                _buildImageContainer('assets/images/community.png'),
-
+                _buildImageSection('assets/images/community.png'),
                 const SizedBox(height: 24),
-
-                // Join Community Button
-                Center(child: _buildButton(context, 'Join our Community', width: 185)),
-
+                _buildActionButton(
+                  context: context,
+                  text: 'Join our Community',
+                  width: 185,
+                  onPressed: () => Navigator.pushNamed(context, '/community'),
+                ),
                 const SizedBox(height: 24),
-
-                // Asthma History Text
                 const Text(
                   'Look at your Asthma History',
                   style: TextStyle(
@@ -58,12 +51,12 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.black,
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Progress Button
-                Center(child: _buildButton(context, 'Check your Progress', width: 185)),
-
+                _buildActionButton(
+                  context: context,
+                  text: 'Check your Progress',
+                  width: 185,
+                ),
                 const SizedBox(height: 24),
               ],
             ),
@@ -75,6 +68,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildGreetingCard() {
     return Container(
+      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.grey[200],
@@ -121,30 +115,52 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtonsRow(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildButton(context, 'Log Symptom'),
-        _buildButton(context, 'Insights'),
-        _buildButton(context, 'Medication'),
-      ],
-    );
-  }
-
-  Widget _buildImageContainer(String imagePath) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: Image.asset(
-        imagePath,
-        width: double.infinity,
-        height: 190,
-        fit: BoxFit.cover,
+  Widget _buildActionButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildActionButton(
+            context: context,
+            text: 'Symptoms',
+            onPressed: () => Navigator.pushNamed(context, '/Symptoms'),
+          ),
+          _buildActionButton(
+            context: context,
+            text: 'Insights',
+          ),
+          _buildActionButton(
+            context: context,
+            text: 'Medication',
+            onPressed: () => Navigator.pushNamed(context, '/medications'),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildButton(BuildContext context, String text, {double? width}) {
+  Widget _buildImageSection(String imagePath) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.asset(
+          imagePath,
+          width: double.infinity,
+          height: 190,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required BuildContext context,
+    required String text,
+    double? width,
+    VoidCallback? onPressed,
+  }) {
     return Container(
       width: width ?? 110,
       height: 41,
@@ -158,13 +174,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {
-          if (text == 'Log Symptom') {
-            Navigator.pushNamed(context, '/log-symptoms');
-          } else if (text == 'Medication') {
-            Navigator.pushNamed(context, '/medications');
-          }
-        },
+        onPressed: onPressed ?? () {},
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF9866B0),
           foregroundColor: Colors.white,
