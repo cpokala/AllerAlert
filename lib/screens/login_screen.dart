@@ -191,7 +191,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Create Account Button
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/signup');
+                      },
                       style: TextButton.styleFrom(
                         backgroundColor: const Color(0xFF9866B0),
                         minimumSize: Size(screenSize.width * 0.6, 48),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
+import 'screens/signup_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,10 +16,15 @@ class MyApp extends StatelessWidget {
       title: 'AllerAlert',
       theme: ThemeData(
         primarySwatch: Colors.purple,
-        // Using system fonts instead of custom fonts
+        scaffoldBackgroundColor: Colors.white,
         textTheme: const TextTheme(
           displayLarge: TextStyle(
             fontSize: 48,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+          headlineMedium: TextStyle(
+            fontSize: 32,
             fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
@@ -34,7 +40,12 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const LoginScreen(),
+      // Define named routes
+      routes: {
+        '/': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+      },
+      initialRoute: '/',
     );
   }
 }
