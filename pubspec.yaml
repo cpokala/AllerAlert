@@ -64,6 +64,7 @@ flutter:
     - assets/images/apple_logo.png
     - assets/images/city_skyline.png
     - assets/images/community.png
+    - assets/images/weather.png
 
   #fonts:
     #- family: Kay Pho Du

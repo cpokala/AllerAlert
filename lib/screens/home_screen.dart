@@ -32,6 +32,7 @@ class HomeScreen extends StatelessWidget {
                   context: context,
                   text: 'Air Quality',
                   width: 116,
+                    onPressed: () => Navigator.pushNamed(context, '/air-quality')
                 ),
                 const SizedBox(height: 24),
                 _buildImageSection('assets/images/community.png'),
@@ -124,7 +125,7 @@ class HomeScreen extends StatelessWidget {
           _buildActionButton(
             context: context,
             text: 'Symptoms',
-            onPressed: () => Navigator.pushNamed(context, '/Symptoms'),
+            onPressed: () => Navigator.pushNamed(context, '/log-symptoms'),
           ),
           _buildActionButton(
             context: context,
