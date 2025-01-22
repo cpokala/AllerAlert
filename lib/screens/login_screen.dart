@@ -152,7 +152,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Sign In Button
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/home');
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF9866B0),
                         minimumSize: Size(screenSize.width * 0.4, 48),

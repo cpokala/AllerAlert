@@ -62,6 +62,8 @@ flutter:
     - assets/images/lungs_logo.png
     - assets/images/google_logo.png
     - assets/images/apple_logo.png
+    - assets/images/city_skyline.png
+    - assets/images/community.png
 
   #fonts:
     #- family: Kay Pho Du
