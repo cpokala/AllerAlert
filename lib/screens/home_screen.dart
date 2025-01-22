@@ -73,9 +73,9 @@ class HomeScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildActionButton('Log Symptom'),
-                      _buildActionButton('Insights'),
-                      _buildActionButton('Medication'),
+                      _buildActionButton(context, 'Log Symptom'),
+                      _buildActionButton(context, 'Insights'),
+                      _buildActionButton(context, 'Medication'),
                     ],
                   ),
 
@@ -95,7 +95,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Air Quality Button
-                  _buildActionButton('Air Quality', width: 116),
+                  _buildActionButton(context, 'Air Quality', width: 116),
 
                   const SizedBox(height: 24),
 
@@ -113,7 +113,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Join Community Button
-                  _buildActionButton('Join our Community', width: 185),
+                  _buildActionButton(context, 'Join our Community', width: 185),
 
                   const SizedBox(height: 24),
 
@@ -130,7 +130,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Progress Button
-                  _buildActionButton('Check your Progress', width: 185),
+                  _buildActionButton(context, 'Check your Progress', width: 185),
                 ],
               ),
             ),
@@ -140,7 +140,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(String text, {double? width}) {
+  Widget _buildActionButton(BuildContext context, String text, {double? width}) {
     return Container(
       width: width ?? 110,
       height: 41,
@@ -154,7 +154,11 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          if (text == 'Log Symptom') {
+            Navigator.pushNamed(context, '/log-symptoms');
+          }
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF9866B0),
           foregroundColor: Colors.white,

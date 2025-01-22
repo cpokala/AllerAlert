@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/log_symptoms_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,11 +42,11 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      // Define named routes
       routes: {
         '/': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/home': (context) => const HomeScreen(),
+        '/log-symptoms': (context) => const LogSymptomsScreen(),
       },
       initialRoute: '/',
     );
