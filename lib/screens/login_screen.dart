@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,7 +13,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -20,9 +24,90 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // Handle email sign in
+  Future<void> _handleEmailSignIn() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      try {
+        final userCredential = await _authService.signInWithEmail(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+        if (!mounted) return;
+
+        if (userCredential != null) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } on FirebaseAuthException catch (e) {
+        if (!mounted) return;
+
+        String errorMessage = 'An error occurred during sign in';
+        switch (e.code) {
+          case 'user-not-found':
+            errorMessage = 'No user found with this email.';
+            break;
+          case 'wrong-password':
+            errorMessage = 'Wrong password provided.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'The email address is badly formatted.';
+            break;
+          case 'user-disabled':
+            errorMessage = 'This user account has been disabled.';
+            break;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
+
+  // Handle Google sign in
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final userCredential = await _authService.signInWithGoogle();
+      if (!mounted) return;
+
+      if (userCredential != null) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google sign in was cancelled')),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Authentication failed: ${e.message}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Get screen size for responsive design
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -45,6 +130,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    if (_isLoading)
+                      const Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+
                     // App Title
                     Container(
                       width: double.infinity,
@@ -79,7 +172,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Breathe Easy Text
                     const Text(
                       'Breathe Easy',
                       style: TextStyle(
@@ -89,7 +181,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Welcome Back Text
                     const Column(
                       children: [
                         Text(
@@ -112,6 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Email Field
                     TextFormField(
                       controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         hintText: 'Email',
                         filled: true,
@@ -120,6 +212,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+                            .hasMatch(value)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
                     ),
 
                     const SizedBox(height: 16),
@@ -137,7 +239,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
                           onPressed: () {
                             setState(() {
@@ -146,15 +250,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
                     ),
 
                     const SizedBox(height: 24),
 
                     // Sign In Button
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/home');
-                      },
+                      onPressed: _isLoading ? null : _handleEmailSignIn,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF9866B0),
                         minimumSize: Size(screenSize.width * 0.4, 48),
@@ -174,7 +285,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Or sign in with text
                     const Text('or sign in with'),
 
                     const SizedBox(height: 16),
@@ -183,9 +293,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildSocialButton('assets/images/google_logo.png', () {}),
+                        _buildSocialButton(
+                          'assets/images/google_logo.png',
+                          _handleGoogleSignIn,
+                        ),
                         const SizedBox(width: 20),
-                        _buildSocialButton('assets/images/apple_logo.png', () {}),
+                        _buildSocialButton(
+                          'assets/images/apple_logo.png',
+                              () {}, // Apple sign in not implemented yet
+                        ),
                       ],
                     ),
 
@@ -226,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildSocialButton(String iconPath, VoidCallback onPressed) {
     return InkWell(
-      onTap: onPressed,
+      onTap: _isLoading ? null : onPressed,
       child: Container(
         width: 40,
         height: 40,

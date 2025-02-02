@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "172461007999",
+    "project_id": "alleralert-app",
+    "storage_bucket": "alleralert-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:172461007999:android:26f0bb82eb1d4000f80b4a",
+        "android_client_info": {
+          "package_name": "com.example.alleralert_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "172461007999-5ctjik9iqm2uab9jn4ib779o6bupd2j5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.alleralert_app",
+            "certificate_hash": "ee60db7cb4e9b7a3b76f573e1a9e5b79e0074b7e"
+          }
+        },
+        {
+          "client_id": "172461007999-42cpab4votus8mg2fr04la5ahj84tf34.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByfS1jMTB4DVE-eI35sEayIqRG1Wakyjw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "172461007999-42cpab4votus8mg2fr04la5ahj84tf34.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "172461007999-if2rm3rv2dbs604hv5ehubfivs87blkt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.alleralertApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
