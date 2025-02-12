@@ -19,46 +19,101 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
+                // Greeting Card Section
                 _buildGreetingCard(),
-                const SizedBox(height: 20),
+
+                const SizedBox(height: 16),
+
+                // Action Buttons Row
                 _buildActionButtons(context),
-                const SizedBox(height: 24),
-                _buildImageSection('assets/images/city_skyline.png'),
-                const SizedBox(height: 24),
-                _buildActionButton(
-                  context: context,
-                  text: 'Air Quality',
-                  width: 116,
-                    onPressed: () => Navigator.pushNamed(context, '/air-quality')
-                ),
-                const SizedBox(height: 24),
-                _buildImageSection('assets/images/community.png'),
-                const SizedBox(height: 24),
-                _buildActionButton(
-                  context: context,
-                  text: 'Join our Community',
-                  width: 185,
-                  onPressed: () => Navigator.pushNamed(context, '/community'),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Look at your Asthma History',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
+
+                // Main Content Area with Images and Buttons
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Air Quality Section
+                      Flexible(
+                        flex: 3,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.asset(
+                                  'assets/images/city_skyline.png',
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildActionButton(
+                              context: context,
+                              text: 'Air Quality',
+                              width: 116,
+                              onPressed: () => Navigator.pushNamed(context, '/air-quality'),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Community Section
+                      Flexible(
+                        flex: 3,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.asset(
+                                  'assets/images/community.png',
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildActionButton(
+                              context: context,
+                              text: 'Join our Community',
+                              width: 185,
+                              onPressed: () => Navigator.pushNamed(context, '/community'),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Progress Section
+                      Flexible(
+                        flex: 2,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Look at your Asthma History',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildActionButton(
+                              context: context,
+                              text: 'Check your Progress',
+                              width: 185,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                _buildActionButton(
-                  context: context,
-                  text: 'Check your Progress',
-                  width: 185,
-                ),
-                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -69,7 +124,6 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildGreetingCard() {
     return Container(
-      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.grey[200],
@@ -117,42 +171,24 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildActionButton(
-            context: context,
-            text: 'Symptoms',
-            onPressed: () => Navigator.pushNamed(context, '/log-symptoms'),
-          ),
-          _buildActionButton(
-            context: context,
-            text: 'Insights',
-          ),
-          _buildActionButton(
-            context: context,
-            text: 'Medication',
-            onPressed: () => Navigator.pushNamed(context, '/medications'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImageSection(String imagePath) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.asset(
-          imagePath,
-          width: double.infinity,
-          height: 190,
-          fit: BoxFit.cover,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildActionButton(
+          context: context,
+          text: 'Symptoms',
+          onPressed: () => Navigator.pushNamed(context, '/log-symptoms'),
         ),
-      ),
+        _buildActionButton(
+          context: context,
+          text: 'Insights',
+        ),
+        _buildActionButton(
+          context: context,
+          text: 'Medication',
+          onPressed: () => Navigator.pushNamed(context, '/medications'),
+        ),
+      ],
     );
   }
 

@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "172461007999-b8mm97mulvm7d0sqtlrv9jjnkev7ui2a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.alleralert_app",
+            "certificate_hash": "242d71c9ab047e1848dfbada10365d514c71c325"
+          }
+        },
+        {
           "client_id": "172461007999-42cpab4votus8mg2fr04la5ahj84tf34.apps.googleusercontent.com",
           "client_type": 3
         }

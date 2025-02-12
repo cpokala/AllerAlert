@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
+import '../firebase_options.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: DefaultFirebaseOptions.currentPlatform.androidClientId,
+  );
 
   // Email & Password Sign In
   Future<UserCredential?> signInWithEmail(String email, String password) async {
