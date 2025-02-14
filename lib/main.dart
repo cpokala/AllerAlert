@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
         '/log-symptoms': (context) => const LogSymptomsScreen(),
         '/medications': (context) => const MedicationsScreen(),
         '/community': (context) => const CommunityScreen(),
-        '/air-quality': (context) => const AirQualityScreen(),
+        '/air-quality': (context) => const AirQualityScreen()
       },
       initialRoute: '/',
     );
