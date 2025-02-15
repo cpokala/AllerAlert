@@ -33,10 +33,9 @@ class _AirQualityScreenState extends State<AirQualityScreen> {
 
     try {
       final position = await _locationService.getCurrentLocation();
-
       if (position == null) {
         setState(() {
-          _errorMessage = 'Unable to get location. Please enable location services and try again.';
+          _errorMessage = 'Unable to get location. Please enable location services.';
           _isLoading = false;
         });
         return;
@@ -59,75 +58,59 @@ class _AirQualityScreenState extends State<AirQualityScreen> {
     }
   }
 
-  Color _getWeatherColor(int weatherCode) {
-    switch (weatherCode) {
-      case 1000: // Clear
-        return const Color(0xFF3BD5FF);
-      case 1100: // Mostly Clear
-      case 1101: // Partly Cloudy
-        return const Color(0xFF87CEEB);
-      case 1001: // Cloudy
-      case 1102: // Mostly Cloudy
-        return const Color(0xFF808080);
-      case 4000: // Drizzle
-      case 4200: // Light Rain
-        return const Color(0xFF4682B4);
-      case 4001: // Rain
-      case 4201: // Heavy Rain
-        return const Color(0xFF000080);
-      case 5000: // Snow
-      case 5001: // Flurries
-      case 5100: // Light Snow
-      case 5101: // Heavy Snow
-        return const Color(0xFFB0E0E6);
-      default:
-        return const Color(0xFF3BD5FF);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment(0.00, -1.00),
-            end: Alignment(0, 1),
-            colors: [Color(0xFFEBC5FF), Color(0xAA9ADAD5), Color(0xFF957AA3)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFEBC5FF), Color(0xFF957AA3)],
           ),
         ),
         child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back Button and Refresh Button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.black),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.black),
-                    onPressed: _fetchWeatherData,
-                  ),
-                ],
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'Weather Details',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: _fetchWeatherData,
+                    ),
+                  ],
+                ),
               ),
 
+              // Content
               if (_isLoading)
                 const Expanded(
                   child: Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF9866B0),
-                    ),
+                    child: CircularProgressIndicator(),
                   ),
                 )
               else if (_errorMessage != null)
                 Expanded(
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -139,14 +122,6 @@ class _AirQualityScreenState extends State<AirQualityScreen> {
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: _fetchWeatherData,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF9866B0),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
                             child: const Text('Retry'),
                           ),
                         ],
@@ -158,184 +133,156 @@ class _AirQualityScreenState extends State<AirQualityScreen> {
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: _fetchWeatherData,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Weather Image
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 24),
-                              width: double.infinity,
-                              height: 293,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                image: const DecorationImage(
-                                  image: AssetImage('assets/images/weather.png'),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-
-                            // Weather Details Section
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD9D9D9),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    'Weather Details',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      _buildWeatherDetail(
-                                        'Temperature',
-                                        '${_weatherData?.temperature.toStringAsFixed(1) ?? '0'} F',
-                                      ),
-                                      _buildWeatherDetail(
-                                        'Humidity',
-                                        '${_weatherData?.humidity ?? '0'}%',
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      _buildWeatherDetail(
-                                        'Pressure',
-                                        '${_weatherData?.pressure.toStringAsFixed(0) ?? '0'} hPa',
-                                      ),
-                                      _buildWeatherDetail(
-                                        'Wind Speed',
-                                        '${_weatherData?.windSpeed.toStringAsFixed(1) ?? '0'} mph',
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // Weather Condition Section
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD9D9D9),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    'Weather Condition',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        'Current Weather',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                      Text(
-                                        _weatherData?.getWeatherCondition() ?? 'Unknown',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          fontFamily: 'Inter',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20),
-                                  // Weather Condition Indicator
-                                  SizedBox(
-                                    height: 33,
-                                    child: Stack(
-                                      alignment: Alignment.center,
+                    child: ListView(
+                      padding: const EdgeInsets.all(16.0),
+                      children: [
+                        // Main Temperature Card
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          width: double.infinity,
-                                          height: 9,
-                                          decoration: BoxDecoration(
-                                            color: _getWeatherColor(_weatherData?.weatherCode ?? 0),
-                                            borderRadius: BorderRadius.circular(50),
+                                        Text(
+                                          '${_weatherData?.temperature.toStringAsFixed(1)}°F',
+                                          style: const TextStyle(
+                                            fontSize: 36,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        Container(
-                                          width: 33,
-                                          height: 33,
-                                          decoration: BoxDecoration(
-                                            color: _getWeatherColor(_weatherData?.weatherCode ?? 0),
-                                            shape: BoxShape.circle,
-                                          ),
+                                        Text(
+                                          'Feels like ${_weatherData?.temperatureApparent.toStringAsFixed(1)}°F',
+                                          style: const TextStyle(fontSize: 14),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _weatherData?.getWeatherCondition() ?? 'Unknown',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400,
-                                      fontFamily: 'Inter',
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        // TODO: Implement detailed forecast
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF9866B0),
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
-                                          side: const BorderSide(color: Colors.white),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'View Detailed Forecast',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                    const Icon(Icons.wb_sunny, size: 48),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _weatherData?.getWeatherCondition() ?? 'Unknown',
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Weather Details Grid
+                        GridView.count(
+                          crossAxisCount: 2,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                          childAspectRatio: 1.5,
+                          children: [
+                            _buildDetailCard(
+                              'Humidity',
+                              '${_weatherData?.humidity ?? 0}%',
+                              Icons.water_drop,
+                            ),
+                            _buildDetailCard(
+                              'Visibility',
+                              '${(_weatherData?.visibility ?? 0).toStringAsFixed(1)} mi',
+                              Icons.visibility,
+                            ),
+                            _buildDetailCard(
+                              'Dew Point',
+                              '${(_weatherData?.dewPoint ?? 0).toStringAsFixed(1)}°F',
+                              Icons.opacity,
+                            ),
+                            _buildDetailCard(
+                              'UV Index',
+                              '${_weatherData?.uvIndex ?? 0}',
+                              Icons.wb_sunny,
                             ),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 16),
+
+                        // Precipitation Card
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Precipitation',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _buildPrecipInfo(
+                                      'Probability',
+                                      '${(_weatherData?.precipitationProbability ?? 0).toStringAsFixed(0)}%',
+                                    ),
+                                    _buildPrecipInfo(
+                                      'Rain',
+                                      '${(_weatherData?.rainIntensity ?? 0).toStringAsFixed(1)} mm/hr',
+                                    ),
+                                    _buildPrecipInfo(
+                                      'Snow',
+                                      '${(_weatherData?.snowIntensity ?? 0).toStringAsFixed(1)} mm/hr',
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Wind Card
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Wind',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _buildWindInfo(
+                                      'Speed',
+                                      '${(_weatherData?.windSpeed ?? 0).toStringAsFixed(1)} mph',
+                                    ),
+                                    _buildWindInfo(
+                                      'Direction',
+                                      '${_weatherData?.windDirection ?? 0}°',
+                                    ),
+                                    _buildWindInfo(
+                                      'Gusts',
+                                      '${(_weatherData?.windGust ?? 0).toStringAsFixed(1)} mph',
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -346,24 +293,65 @@ class _AirQualityScreenState extends State<AirQualityScreen> {
     );
   }
 
-  Widget _buildWeatherDetail(String label, String value) {
+  Widget _buildDetailCard(String title, String value, IconData icon) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrecipInfo(String label, String value) {
     return Column(
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: Colors.black,
-          ),
+          style: const TextStyle(fontSize: 12),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWindInfo(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ],
