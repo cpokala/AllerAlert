@@ -1,7 +1,119 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/firestore_service.dart';
 
-class MedicationsScreen extends StatelessWidget {
+class MedicationsScreen extends StatefulWidget {
   const MedicationsScreen({super.key});
+
+  @override
+  State<MedicationsScreen> createState() => _MedicationsScreenState();
+}
+
+class _MedicationsScreenState extends State<MedicationsScreen> {
+  final FirestoreService _firestoreService = FirestoreService();
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _dosageController = TextEditingController();
+  final _frequencyController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _dosageController.dispose();
+    _frequencyController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showAddMedicationDialog() async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add New Medication'),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Medication Name'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Please enter medication name' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _dosageController,
+                  decoration: const InputDecoration(labelText: 'Dosage (e.g., 2 puffs, 10mg)'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Please enter dosage' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _frequencyController,
+                  decoration: const InputDecoration(labelText: 'Frequency (e.g., every 4-6 hours)'),
+                  validator: (value) => value?.isEmpty ?? true ? 'Please enter frequency' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description (optional)'),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: _handleAddMedication,
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleAddMedication() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      try {
+        await _firestoreService.addMedication(
+          name: _nameController.text,
+          dosage: _dosageController.text,
+          frequency: _frequencyController.text,
+          description: _descriptionController.text,
+        );
+
+        if (!mounted) return;
+        Navigator.pop(context);
+
+        // Clear form
+        _nameController.clear();
+        _dosageController.clear();
+        _frequencyController.clear();
+        _descriptionController.clear();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Medication added successfully')),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error adding medication: $e')),
+        );
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,23 +201,44 @@ class MedicationsScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // Today's Medication Section
-                      _buildSection(
-                        "Today's Medication",
-                        child: Column(
-                          children: [
-                            _buildMedicationItem(
-                              'Albuterol Inhaler',
-                              '2 puffs, every 4-6 hours',
-                              showTakeNow: true,
+                      FutureBuilder<QuerySnapshot>(
+                        future: _firestoreService.getMedications(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return _buildSection(
+                              "Today's Medication",
+                              child: const Text('Error loading medications'),
+                            );
+                          }
+
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return _buildSection(
+                              "Today's Medication",
+                              child: const Center(child: CircularProgressIndicator()),
+                            );
+                          }
+
+                          final medications = snapshot.data?.docs ?? [];
+
+                          return _buildSection(
+                            "Today's Medication",
+                            child: Column(
+                              children: medications.map((doc) {
+                                final data = doc.data() as Map<String, dynamic>;
+                                return Column(
+                                  children: [
+                                    _buildMedicationItem(
+                                      data['name'] ?? '',
+                                      '${data['dosage']}, ${data['frequency']}',
+                                      showTakeNow: true,
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
+                                );
+                              }).toList(),
                             ),
-                            const SizedBox(height: 16),
-                            _buildMedicationItem(
-                              'Montelukast',
-                              '10 mg, before bedtime',
-                              showTakeNow: true,
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
 
                       const SizedBox(height: 20),
@@ -139,35 +272,50 @@ class MedicationsScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // All Medications Section
-                      _buildSection(
-                        'All Medications',
-                        child: Column(
-                          children: [
-                            _buildAllMedicationsItem(
-                              'Albuterol Inhaler',
-                              'For quick relief of asthma symptoms',
+                      FutureBuilder<QuerySnapshot>(
+                        future: _firestoreService.getMedications(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return _buildSection(
+                              'All Medications',
+                              child: const Text('Error loading medications'),
+                            );
+                          }
+
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return _buildSection(
+                              'All Medications',
+                              child: const Center(child: CircularProgressIndicator()),
+                            );
+                          }
+
+                          final medications = snapshot.data?.docs ?? [];
+
+                          return _buildSection(
+                            'All Medications',
+                            child: Column(
+                              children: medications.map((doc) {
+                                final data = doc.data() as Map<String, dynamic>;
+                                return Column(
+                                  children: [
+                                    _buildAllMedicationsItem(
+                                      data['name'] ?? '',
+                                      data['description'] ?? '',
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
+                                );
+                              }).toList(),
                             ),
-                            const SizedBox(height: 16),
-                            _buildAllMedicationsItem(
-                              'Montelukast',
-                              'Daily for asthma control',
-                            ),
-                            const SizedBox(height: 16),
-                            _buildAllMedicationsItem(
-                              'Fluticasone Nasal Spray',
-                              'For allergic rhinitis',
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
 
                       const SizedBox(height: 20),
 
                       // Add New Medication Button
                       ElevatedButton(
-                        onPressed: () {
-                          // TODO: Implement add medication
-                        },
+                        onPressed: _isLoading ? null : _showAddMedicationDialog,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF9866B0),
                           foregroundColor: Colors.white,
@@ -177,7 +325,9 @@ class MedicationsScreen extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text(
+                        child: _isLoading
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text(
                           '+ Add New Medication Here',
                           style: TextStyle(
                             fontSize: 20,

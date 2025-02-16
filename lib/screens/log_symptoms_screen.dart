@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/firestore_service.dart';
 
 class LogSymptomsScreen extends StatefulWidget {
   const LogSymptomsScreen({super.key});
@@ -8,9 +9,11 @@ class LogSymptomsScreen extends StatefulWidget {
 }
 
 class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
+  final FirestoreService _firestoreService = FirestoreService();
   final _thoughtsController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   int? _selectedMoodIndex;
+  bool _isLoading = false;
 
   final List<String> _symptoms = [
     'Coughing',
@@ -46,6 +49,51 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
     super.dispose();
   }
 
+  Future<void> _saveSymptoms() async {
+    if (_selectedMoodIndex == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select your mood')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Create symptoms map
+      Map<String, bool> symptoms = {};
+      for (int i = 0; i < _symptoms.length; i++) {
+        symptoms[_symptoms[i]] = _selectedSymptoms[i];
+      }
+
+      // Save to Firestore
+      await _firestoreService.logSymptoms(
+        mood: _selectedMoodIndex!,
+        thoughts: _thoughtsController.text,
+        symptoms: symptoms,
+      );
+
+      if (!mounted) return;
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Symptoms logged successfully')),
+      );
+
+      // Navigate back
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving symptoms: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,12 +108,47 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Back Button
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () => Navigator.of(context).pop(),
+              // Back Button and Save Button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    TextButton(
+                      onPressed: _isLoading ? null : _saveSymptoms,
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFF9866B0),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Text(
+                        'Save',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 

@@ -2,20 +2,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import '../firebase_options.dart';
+import 'firestore_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId: DefaultFirebaseOptions.currentPlatform.androidClientId,
   );
+  final FirestoreService _firestoreService = FirestoreService();
 
   // Email & Password Sign In
   Future<UserCredential?> signInWithEmail(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(
+      final userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      // Update user document in Firestore
+      if (userCredential.user != null) {
+        await _firestoreService.createOrUpdateUser(userCredential.user!);
+      }
+
+      return userCredential;
     } catch (e) {
       debugPrint('Error signing in with email: $e');
       rethrow;
@@ -25,10 +34,17 @@ class AuthService {
   // Email & Password Sign Up
   Future<UserCredential?> signUpWithEmail(String email, String password) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      // Create user document in Firestore
+      if (userCredential.user != null) {
+        await _firestoreService.createOrUpdateUser(userCredential.user!);
+      }
+
+      return userCredential;
     } catch (e) {
       debugPrint('Error signing up with email: $e');
       rethrow;
@@ -38,39 +54,25 @@ class AuthService {
   // Google Sign In
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
-      // If user cancels the sign-in flow, return null
       if (googleUser == null) return null;
 
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
-
-      // Create a new credential
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Sign in to Firebase with the credential
-      return await _auth.signInWithCredential(credential);
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      // Create/update user document in Firestore
+      if (userCredential.user != null) {
+        await _firestoreService.createOrUpdateUser(userCredential.user!);
+      }
+
+      return userCredential;
     } catch (e) {
       debugPrint('Error signing in with Google: $e');
-      rethrow;
-    }
-  }
-
-  // Sign Out
-  Future<void> signOut() async {
-    try {
-      await Future.wait([
-        _googleSignIn.signOut(),
-        _auth.signOut(),
-      ]);
-    } catch (e) {
-      debugPrint('Error signing out: $e');
       rethrow;
     }
   }

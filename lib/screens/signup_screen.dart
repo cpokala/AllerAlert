@@ -32,16 +32,19 @@ class _SignupScreenState extends State<SignupScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
+        print('Attempting to sign up with email: ${_emailController.text}');
         final userCredential = await _authService.signUpWithEmail(
           _emailController.text.trim(),
           _passwordController.text,
         );
         if (!mounted) return;
 
+        print('Sign up successful: ${userCredential?.user?.uid}');
         if (userCredential != null) {
           Navigator.pushReplacementNamed(context, '/home');
         }
       } on FirebaseAuthException catch (e) {
+        print('Firebase Auth Error: ${e.code} - ${e.message}');
         if (!mounted) return;
         String errorMessage = 'An error occurred during sign up';
         switch (e.code) {
@@ -59,6 +62,7 @@ class _SignupScreenState extends State<SignupScreen> {
           SnackBar(content: Text(errorMessage)),
         );
       } catch (e) {
+        print('General Error: $e');
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString())),
