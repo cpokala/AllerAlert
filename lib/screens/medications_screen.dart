@@ -30,8 +30,14 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
   Future<void> _showAddMedicationDialog() async {
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add New Medication'),
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text(
+          'Add New Medication',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         content: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -40,25 +46,45 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Medication Name'),
+                  decoration: const InputDecoration(
+                    labelText: 'Medication Name',
+                    labelStyle: TextStyle(fontSize: 14),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  ),
+                  style: const TextStyle(fontSize: 14),
                   validator: (value) => value?.isEmpty ?? true ? 'Please enter medication name' : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _dosageController,
-                  decoration: const InputDecoration(labelText: 'Dosage (e.g., 2 puffs, 10mg)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Dosage (e.g., 2 puffs, 10mg)',
+                    labelStyle: TextStyle(fontSize: 14),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  ),
+                  style: const TextStyle(fontSize: 14),
                   validator: (value) => value?.isEmpty ?? true ? 'Please enter dosage' : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _frequencyController,
-                  decoration: const InputDecoration(labelText: 'Frequency (e.g., every 4-6 hours)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Frequency (e.g., every 4-6 hours)',
+                    labelStyle: TextStyle(fontSize: 14),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  ),
+                  style: const TextStyle(fontSize: 14),
                   validator: (value) => value?.isEmpty ?? true ? 'Please enter frequency' : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description (optional)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Description (optional)',
+                    labelStyle: TextStyle(fontSize: 14),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  ),
+                  style: const TextStyle(fontSize: 14),
                   maxLines: 2,
                 ),
               ],
@@ -68,11 +94,17 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontSize: 14),
+            ),
           ),
           TextButton(
-            onPressed: _handleAddMedication,
-            child: const Text('Add'),
+            onPressed: () => _handleAddMedication(),
+            child: const Text(
+              'Add',
+              style: TextStyle(fontSize: 14),
+            ),
           ),
         ],
       ),
@@ -425,28 +457,28 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
   Widget _buildHistoryItem(String name, String time, bool taken) {
     return Row(
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              Text(
-                time,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: taken ? Colors.black : const Color(0xFFD81717),
-                ),
-              ),
-            ],
-          ),
-        ),
+    Expanded(
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+      Text(
+      name,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+      ),
+    ),
+    Text(
+    time,
+    style: TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+      color: taken ? Colors.black : const Color(0xFFD81717),
+    ),
+    ),
+      ],
+    ),
+    ),
         Icon(
           taken ? Icons.check_circle : Icons.error,
           color: taken ? Colors.green : const Color(0xFFD81717),
