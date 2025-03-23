@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:get/get.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -111,7 +112,10 @@ class HomeScreen extends StatelessWidget {
         _buildActionButton(
           icon: Icons.insights,
           label: 'Insights',
-          onTap: () {},
+          onTap: () {
+            // Use GetX navigation to the Bluetooth scanner screen
+            Get.toNamed('/scan-devices');
+          },
         ),
         _buildActionButton(
           icon: Icons.medication,
@@ -253,7 +257,57 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
 
-        // Progress Section
+        // Air Quality Monitor Card (Bluetooth Integration)
+        GestureDetector(
+          onTap: () {
+            // Use GetX navigation to the Bluetooth scanner screen
+            Get.toNamed('/scan-devices');
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF9866B0).withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.bluetooth_searching,
+                    size: 40,
+                    color: Color(0xFF9866B0),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Personal Air Monitor',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Connect to your air quality monitoring device',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Progress Section - kept as is
         Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
           padding: const EdgeInsets.all(16),
