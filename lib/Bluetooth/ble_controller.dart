@@ -15,9 +15,7 @@ class BleController extends GetxController {
   final logger = Logger();
   BluetoothDevice? connectedDevice;
 
-  // Firebase service for data storage
-  late final FirebaseService _firebaseService;
-  // Firestore service reference
+  // Use FirestoreService instead of FirebaseService
   late final FirestoreService _firestoreService;
   bool _shouldSaveReadings = true;  // Flag to control whether to save readings
 
@@ -78,9 +76,12 @@ class BleController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _firestoreService = Get.find<FirestoreService>();
-    // Initialize Firebase service
-    _firebaseService = FirebaseService();
+    try {
+      _firestoreService = Get.find<FirestoreService>();
+    } catch (e) {
+      logger.e("FirestoreService not found. Make sure it's initialized in main.dart");
+      throw Exception("FirestoreService not initialized");
+    }
   }
 
   @override
@@ -426,11 +427,11 @@ class BleController extends GetxController {
       );
 
       // Add to buffer - will be saved according to throttling rules
-      await _firebaseService.addReading(reading);
-      logger.d("Reading added to Firebase buffer");
+      await _firestoreService.addReading(reading);
+      logger.d("Reading added to Firestore buffer");
 
     } catch (e) {
-      logger.e("Error processing reading for Firebase: $e");
+      logger.e("Error processing reading for Firestore: $e");
     }
   }
 
@@ -440,7 +441,7 @@ class BleController extends GetxController {
 
     // If disabling, force save any buffered readings
     if (!shouldSave) {
-      _firebaseService.forceSave();
+      _firestoreService.forceSave();
     }
 
     logger.i("Data saving is now ${shouldSave ? 'enabled' : 'disabled'}");
@@ -587,7 +588,7 @@ class BleController extends GetxController {
 
         // Save any remaining readings before disconnecting
         if (_shouldSaveReadings) {
-          await _firebaseService.forceSave();
+          await _firestoreService.forceSave();
         }
 
         await connectedDevice!.disconnect();
@@ -799,14 +800,12 @@ class EnvironmentalDataPoint {
     int? clusterId,
   }) {
     return EnvironmentalDataPoint(
-      voc: voc ?? this.voc,
-      temperature: temperature ?? this.temperature,
-      pressure: pressure ?? this.pressure,
-      humidity: humidity ?? this.humidity,
-      timestamp: timestamp ?? this.timestamp,
-      clusterId: clusterId ?? this.clusterId,
+        voc: voc ?? this.voc,
+        temperature: temperature ?? this.temperature,
+        pressure: pressure ?? this.pressure,
+        humidity: humidity ?? this.humidity,
+        timestamp: timestamp ?? this.timestamp,
+        clusterId: clusterId ?? this.clusterId,
     );
   }
 }
-
-//
