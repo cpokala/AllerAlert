@@ -3,13 +3,23 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:logger/logger.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../firebase_options.dart';
 import 'ml_service.dart';
 import 'dart:async';
 import 'dart:math';
+import 'air_quality_reading.dart';
+import '../services/firestore_service.dart';
 
 class BleController extends GetxController {
   final logger = Logger();
   BluetoothDevice? connectedDevice;
+
+  // Firebase service for data storage
+  late final FirebaseService _firebaseService;
+  // Firestore service reference
+  late final FirestoreService _firestoreService;
+  bool _shouldSaveReadings = true;  // Flag to control whether to save readings
 
   // Observable variables for real-time data
   final airQualityVOC = RxString('VOC: 0 ppb');
@@ -64,6 +74,14 @@ class BleController extends GetxController {
   StreamSubscription? _connectionStateSubscription;
   int _reconnectAttempts = 0;
   static const int maxReconnectAttempts = 3;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _firestoreService = Get.find<FirestoreService>();
+    // Initialize Firebase service
+    _firebaseService = FirebaseService();
+  }
 
   @override
   void onClose() {
@@ -277,6 +295,9 @@ class BleController extends GetxController {
         await readCharacteristic(service, "db450003-8e9a-4818-add7-6ed94a328ab4", _updateEnvironmental);
         await readCharacteristic(service, "db450004-8e9a-4818-add7-6ed94a328ab4", _updateStatus);
         await readCharacteristic(service, "db450005-8e9a-4818-add7-6ed94a328ab4", _updatePM);
+
+        // Save the current reading after all data has been updated
+        await saveCurrentReadingToFirebase();
       } else {
         logger.w("Service not found for polling");
       }
@@ -377,6 +398,52 @@ class BleController extends GetxController {
     } catch (e) {
       logger.e("Error updating PM data: $e");
     }
+  }
+
+  // Save current reading to Firebase
+  Future<void> saveCurrentReadingToFirebase() async {
+    if (!_shouldSaveReadings) return;
+
+    try {
+      // Get the current user ID
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        logger.w("Cannot save reading: User not logged in");
+        return;
+      }
+
+      // Create a reading object from the current values
+      final reading = AirQualityReading(
+        voc: double.tryParse(airQualityVOC.value.split(' ')[1]) ?? 0.0,
+        temperature: temperature.value,
+        humidity: humidity.value,
+        pressure: pressure.value,
+        batteryLevel: batteryLevel.value,
+        particulateMatter: Map<String, double>.from(pmDetails),
+        timestamp: DateTime.now(),
+        userId: userId,
+        deviceId: connectedDevice?.platformName ?? 'Unknown Device',
+      );
+
+      // Add to buffer - will be saved according to throttling rules
+      await _firebaseService.addReading(reading);
+      logger.d("Reading added to Firebase buffer");
+
+    } catch (e) {
+      logger.e("Error processing reading for Firebase: $e");
+    }
+  }
+
+  // Toggle data saving functionality
+  void toggleDataSaving(bool shouldSave) {
+    _shouldSaveReadings = shouldSave;
+
+    // If disabling, force save any buffered readings
+    if (!shouldSave) {
+      _firebaseService.forceSave();
+    }
+
+    logger.i("Data saving is now ${shouldSave ? 'enabled' : 'disabled'}");
   }
 
   void addEnvironmentalDataPoint() {
@@ -517,6 +584,12 @@ class BleController extends GetxController {
     if (connectedDevice != null) {
       try {
         stopPolling();
+
+        // Save any remaining readings before disconnecting
+        if (_shouldSaveReadings) {
+          await _firebaseService.forceSave();
+        }
+
         await connectedDevice!.disconnect();
         connectedDevice = null;
       } catch (e) {
@@ -735,3 +808,5 @@ class EnvironmentalDataPoint {
     );
   }
 }
+
+//

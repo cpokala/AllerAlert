@@ -22,25 +22,30 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
+          child: SingleChildScrollView( // Added SingleChildScrollView to fix overflow
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
 
-                // Greeting Card
-                _buildGreetingCard(user),
+                  // Greeting Card
+                  _buildGreetingCard(user),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Action Buttons
-                _buildActionButtons(context),
+                  // Action Buttons
+                  _buildActionButtons(context),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Main Content
-                Expanded(child: _buildMainContent(context)),
-              ],
+                  // Main Content
+                  _buildMainContent(context),
+
+                  // Add bottom padding to prevent overflow
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ),
@@ -257,57 +262,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
 
-        // Air Quality Monitor Card (Bluetooth Integration)
-        GestureDetector(
-          onTap: () {
-            // Use GetX navigation to the Bluetooth scanner screen
-            Get.toNamed('/scan-devices');
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF9866B0).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.bluetooth_searching,
-                    size: 40,
-                    color: Color(0xFF9866B0),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Personal Air Monitor',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Connect to your air quality monitoring device',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Progress Section - kept as is
+        // Progress Section
         Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
           padding: const EdgeInsets.all(16),

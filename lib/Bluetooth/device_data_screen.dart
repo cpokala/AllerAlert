@@ -86,6 +86,7 @@ class DeviceDataScreenState extends State<DeviceDataScreen> {
   late ZoomPanBehavior _zoomPanBehaviorPressure;
   late ZoomPanBehavior _zoomPanBehaviorScatter;
   late TooltipBehavior _tooltipBehavior;
+  bool _isDataSavingEnabled = true; // Added state variable for data saving toggle
 
   @override
   void initState() {
@@ -178,6 +179,68 @@ class DeviceDataScreenState extends State<DeviceDataScreen> {
         ),
       );
     });
+  }
+
+  // Moved inside the class and fixed the widget reference
+  Widget _buildDataStorageToggle() {
+    return Card(
+      margin: const EdgeInsets.all(8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Data Storage',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Switch(
+                  value: _isDataSavingEnabled,
+                  onChanged: widget.controller.connectedDevice != null
+                      ? (value) {
+                    setState(() {
+                      _isDataSavingEnabled = value;
+                      widget.controller.toggleDataSaving(value);
+                    });
+
+                    // Show feedback to user
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Data saving ${value ? 'enabled' : 'disabled'}'
+                        ),
+                        backgroundColor: value ? Colors.green : Colors.orange,
+                      ),
+                    );
+                  }
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.controller.connectedDevice != null
+                  ? (_isDataSavingEnabled
+                  ? 'Air quality readings are being saved to your account'
+                  : 'Air quality readings are not being saved')
+                  : 'Connect to a device to start saving readings',
+              style: TextStyle(
+                color: widget.controller.connectedDevice != null
+                    ? (_isDataSavingEnabled ? Colors.green[700] : Colors.orange[700])
+                    : Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildScatterPlot() {
@@ -441,6 +504,11 @@ class DeviceDataScreenState extends State<DeviceDataScreen> {
         title: const Text('Air Quality Data'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'View History',
+            onPressed: () => Get.toNamed('/air-quality-history'),
+          ),
+          IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
               // Store context in a local variable
@@ -469,6 +537,9 @@ class DeviceDataScreenState extends State<DeviceDataScreen> {
           children: [
             // Connection Status
             _buildConnectionStatus(),
+
+            // Data Storage Toggle
+            _buildDataStorageToggle(),
 
             // Current Values Section
             Card(

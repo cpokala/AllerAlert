@@ -12,18 +12,30 @@ import 'screens/air_quality_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'bluetooth/ble_controller.dart';
-import 'bluetooth/device_data_screen.dart';
-import 'bluetooth/ml_service.dart';
-import 'bluetooth/phi_service.dart';
+import 'Bluetooth/ble_controller.dart';
+import 'Bluetooth/device_data_screen.dart';
+import 'Bluetooth/ml_service.dart';
+import 'services/firestore_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    if (kDebugMode) {
+      print('Firebase initialized successfully');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Failed to initialize Firebase: $e');
+    }
+  }
+
+  // Initialize Service - only FirestoreService since there's no FirebaseService
+  Get.put(FirestoreService());
 
   // Request permissions
   await requestPermissions();
@@ -37,15 +49,6 @@ void main() async {
   } catch (e) {
     if (kDebugMode) {
       print('Failed to initialize ML Service: $e');
-    }
-  }
-
-  // Initialize PHI Service (optional - may fail silently)
-  try {
-    await PhiService.initialize();
-  } catch (e) {
-    if (kDebugMode) {
-      print('Failed to initialize PHI Service: $e');
     }
   }
 
@@ -184,8 +187,9 @@ class BluetoothScanScreen extends StatelessWidget {
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
                         final data = snapshot.data![index];
-                        final deviceName = data.device.name.isNotEmpty
-                            ? data.device.name
+                        // Changed from name to platformName to fix deprecation warning
+                        final deviceName = data.device.platformName.isNotEmpty
+                            ? data.device.platformName
                             : "Unknown Device";
 
                         return Container(
