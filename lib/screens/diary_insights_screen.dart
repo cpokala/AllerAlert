@@ -65,34 +65,33 @@ class _DiaryInsightsScreenState extends State<DiaryInsightsScreen> with SingleTi
         padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              text,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+            Flexible(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$count mentions',
-                    style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$count mentions',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -140,7 +139,7 @@ class _DiaryInsightsScreenState extends State<DiaryInsightsScreen> with SingleTi
             crossAxisCount: 2,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 2.2,
+            childAspectRatio: 1.8, // Adjusted from 2.2 to give more height
           ),
           itemCount: sortedEntries.length > 6 ? 6 : sortedEntries.length,
           itemBuilder: (context, index) {
