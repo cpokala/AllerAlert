@@ -16,6 +16,8 @@ import 'Bluetooth/ble_controller.dart';
 import 'Bluetooth/device_data_screen.dart';
 import 'Bluetooth/ml_service.dart';
 import 'services/firestore_service.dart';
+import 'screens/diary_insights_screen.dart';
+import 'screens/diary_entry_detail_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -123,6 +125,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/medications', page: () => const MedicationsScreen()),
         GetPage(name: '/community', page: () => const CommunityScreen()),
         GetPage(name: '/air-quality', page: () => const AirQualityScreen()),
+        GetPage(name: '/diary-insights', page: () => const DiaryInsightsScreen()),
         GetPage(
           name: '/insights',
           page: () => DeviceDataScreen(

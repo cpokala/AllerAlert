@@ -215,6 +215,60 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
 
+        GestureDetector(
+          onTap: () {
+            Get.toNamed('/diary-insights');
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x3F000000),
+                  blurRadius: 4,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF9866B0).withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.insights,
+                    color: Color(0xFF9866B0),
+                    size: 30,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Diary Insights',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Analyze your triggers',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
         // Community Card
         GestureDetector(
           onTap: () => Navigator.pushNamed(context, '/community'),
@@ -308,3 +362,4 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+

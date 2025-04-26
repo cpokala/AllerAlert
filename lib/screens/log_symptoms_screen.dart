@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/firestore_service.dart';
+import '../services/diary_service.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 
 class LogSymptomsScreen extends StatefulWidget {
   const LogSymptomsScreen({super.key});
@@ -13,10 +16,12 @@ class LogSymptomsScreen extends StatefulWidget {
 
 class _LogSymptomsScreenState extends State<LogSymptomsScreen> with TickerProviderStateMixin {
   final FirestoreService _firestoreService = FirestoreService();
+  final DiaryService _diaryService = DiaryService();
   final _thoughtsController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   int? _selectedMoodIndex;
   bool _isLoading = false;
+  bool _isProcessingNER = false;
 
   // Speech to text variables
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -289,7 +294,17 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> with TickerProvid
       return;
     }
 
-    setState(() => _isLoading = true);
+    if (_thoughtsController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your diary text')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _isProcessingNER = true;
+    });
 
     try {
       // Create symptoms map
@@ -298,7 +313,49 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> with TickerProvid
         symptoms[_symptoms[i]] = _selectedSymptoms[i];
       }
 
-      // Save to Firestore
+      // Show processing message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Analyzing your diary entry...')),
+      );
+
+      // Process text with NER
+      final diaryText = _thoughtsController.text;
+      Map<String, dynamic> nerResults = {};
+
+      try {
+        nerResults = await _diaryService.processText(diaryText);
+        if (kDebugMode) {
+          print('NER results: $nerResults');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error processing text with NER: $e');
+        }
+        // Continue even if NER fails
+        nerResults = {'entities': []};
+      }
+
+      setState(() => _isProcessingNER = false);
+
+      // Get environmental data if available (from atmotube or other sources)
+      // This is a placeholder - in a real app, you'd get this from your Bluetooth service
+      Map<String, dynamic> environmentalData = {
+        'voc': 0.5,
+        'temperature': 22.5,
+        'pressure': 1013.2,
+        'particleMatter': 10.0,
+      };
+
+      // Save to Firestore using the DiaryService
+      await _diaryService.saveDiaryEntry(
+        text: diaryText,
+        nerResults: nerResults,
+        environmentalData: environmentalData,
+        symptoms: symptoms,
+        mood: _selectedMoodIndex,
+      );
+
+      // Also save using the existing FirestoreService for compatibility
       await _firestoreService.logSymptoms(
         mood: _selectedMoodIndex!,
         thoughts: _thoughtsController.text,
@@ -309,15 +366,16 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> with TickerProvid
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Symptoms logged successfully')),
+        const SnackBar(content: Text('Diary entry saved successfully')),
       );
 
       // Navigate back
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving symptoms: $e')),
+        SnackBar(content: Text('Error saving diary entry: $e')),
       );
     } finally {
       if (mounted) {
@@ -364,13 +422,29 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> with TickerProvid
                         ),
                       ),
                       child: _isLoading
-                          ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
+                          ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                          if (_isProcessingNER)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                'Analyzing...',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                        ],
                       )
                           : const Text(
                         'Save',
@@ -476,9 +550,9 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> with TickerProvid
 
                       const SizedBox(height: 16),
 
-                      // Thoughts Section with Speech-to-Text
+                      // Diary Entry with Speech-to-Text
                       _buildSection(
-                        'Tell us about your day',
+                        'Asthma Diary Entry',
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -500,7 +574,7 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> with TickerProvid
                                 decoration: InputDecoration(
                                   hintText: _isListening
                                       ? 'Listening...'
-                                      : 'Write your thoughts here...',
+                                      : 'Describe your symptoms, triggers, medications and activities...',
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.all(16),
                                 ),
@@ -559,6 +633,33 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> with TickerProvid
                                 ),
                             ],
                           ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Information helper
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.purple.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.info_outline, color: Color(0xFF9866B0)),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Your diary entry will be analyzed to identify symptoms, triggers, medications, and more.',
+                                style: TextStyle(
+                                  color: Color(0xFF9866B0),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
 
