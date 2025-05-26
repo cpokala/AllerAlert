@@ -59,12 +59,6 @@ _A Mobile Health App for Proactive Asthma Management_
 | **Huggingface Transformers** | NLP-based symptom extraction |
 | **DBSCAN (Dart)** | Clustering & pattern detection |
 
-## 📱 Screenshots
-
-| Home Dashboard | Air Quality Monitor | Symptom Diary |
-|----------------|---------------------|----------------|
-| ![Home](screenshots/home.png) | ![Air](screenshots/air_quality.png) | ![Diary](screenshots/diary.png) |
-
 ## 🔧 Setup Instructions
 
 1. **Clone the repo**  
